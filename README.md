@@ -1,2 +1,2 @@
 # Google-Keep-Encryptor
-Save note as Ciphertext on keep
+A Chrome extension that can save your note as ciphertext on Google Keep.
