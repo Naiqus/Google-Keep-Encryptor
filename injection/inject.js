@@ -1,5 +1,4 @@
 // const notes = document.getElementsByClassName('IZ65Hb-TBnied');
-
 // Get all the notes
 const notes = document.querySelectorAll('[aria-multiline="true"]');
 const noteClasses = notes[1].classList; // note[1] is always the input note bar
@@ -42,10 +41,10 @@ isValidEncryptJson = function (note) {
     }
 }
 
-checkNote = function (note, noteCOntent) {
+checkNote = function (note, noteContent) {
     
-    if (!isValidEncryptJson(noteCOntent))
+    if (!isValidEncryptJson(noteContent))
         return;
     
-    alert("An encrypted note found!!!\n\n" + noteCOntent);
+    alert("An encrypted note found!!!\n\n" + sjcl.json.decrypt("password", noteContent));
 }
