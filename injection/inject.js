@@ -1,34 +1,21 @@
-// const notes = document.getElementsByClassName('IZ65Hb-TBnied');
 // Get all the notes
-const notes = document.querySelectorAll('[aria-multiline="true"]');
+const throttleDuration = 500; //0.5 second
+let notes = document.querySelectorAll('[aria-multiline="true"]');
+const inputField = notes[1];
 const noteClasses = notes[1].classList; // note[1] is always the input note bar
 // Get the uglified class name of the note's content
 const noteContentClass = noteClasses[noteClasses.length - 1];
+// inputField.setAttribute("encryptorinjected", "true");
+console.log(noteContentClass);
 
-// let note, noteContent;
-
-Array.from(notes).forEach(function (el) {
-    el.style.backgroundColor = "gray";
-    el.addEventListener("click", _ => {
-        getEditableNote(el, this);
-    });
-});
-
-getEditableNote = function(div, callback) {
-    setTimeout(function(){
-        const openedNote = document.getElementsByClassName(noteContentClass);
-        Array.from(openedNote)
-            .filter(el => el.innerHTML != '')
-            .filter(el => el.getAttribute('contenteditable') == "true")
-            .forEach(el => {
-                checkNote(el.parentElement, el.innerHTML.replace(/<br>/g, ""));
-            });
-    }
-    ,2000);
-    div.removeEventListener("click",callback);
+function isStringMaybeEncrypted(note){
+    return note.includes("{\"iv\":");
 }
 
-isValidEncryptJson = function (note) {
+function verifyEncryptJson(note) {
+    if (!note.includes("{\"iv\":"))
+        return false;
+
     try{
         const encrypJson = JSON.parse(note);
         if (encrypJson.hasOwnProperty("iv")) {
@@ -41,10 +28,53 @@ isValidEncryptJson = function (note) {
     }
 }
 
-checkNote = function (note, noteContent) {
-    
-    if (!isValidEncryptJson(noteContent))
-        return;
-    
-    alert("An encrypted note found!!!\n\n" + sjcl.json.decrypt("password", noteContent));
+function findPopupNote() {
+    const editableNotes = document.getElementsByClassName(noteContentClass);
+    Array.from(editableNotes)
+        .filter(el => el.innerHTML != '')
+        .filter(el => el.getAttribute('contenteditable') == "true")
+        .forEach(el => {
+            let text = el.innerHTML.replace(/<br>/g, "");
+            if (verifyEncryptJson(text)) {
+                alert(decryptNote(text));
+            }
+            else {
+                alert("this note is not encrypted");
+            }
+        });
 }
+
+function decryptNote(noteContent, password) {
+    try{
+        return sjcl.json.decrypt(password, noteContent)
+    } catch(e) {
+        console.log(e);
+        return e.msg;
+    }
+}
+
+
+
+//-----------
+// Monitoring
+// Callback function to execute when mutations are observed
+const config = { childList: true, subtree: true };
+const callback = function(mutationsList, observer) {
+    if (mutationsList.length > 10) { // won't observe small changes
+        console.log(mutationsList);
+        observer.disconnect();
+        setTimeout(_ => {
+            if (mutationsList[0].type === 'childList') {
+                console.log('child node changed');
+                findPopupNote();
+                observer.observe(document, config);
+            }
+        }, throttleDuration)
+        
+    }
+};
+
+// Create an observer instance linked to the callback function
+const observer = new MutationObserver(callback);
+// Start observing the target node for configured mutations
+observer.observe(document, config);
