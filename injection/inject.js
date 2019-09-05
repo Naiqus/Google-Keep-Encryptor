@@ -10,15 +10,16 @@ console.log(noteContentClass);
 
 // create dom elements
 const overlay = document.createElement("div");
-const encryptButton = document.createElement("button");
+const encryptButton = document.createElement("div");
 encryptButton.name = "Encrypt";
-const decryptButton = document.createElement("button");
+const decryptButton = document.createElement("div");
 decryptButton.name = "decrypt_btn";
-decryptButton.innerText = "Decrypt";
-let encryptedText;
+let encryptedText, focusedNote;
+let pinButtonClasses;
 
 decryptButton.addEventListener("click", _=> {
     alert(decryptNote(encryptedText, password));
+    showPasswordInput();
 });
 
 function isStringMaybeEncrypted(note){
@@ -48,13 +49,30 @@ function findPopupNote() {
         .filter(el => el.innerHTML != '')
         .filter(el => el.getAttribute('contenteditable') == "true")
         .forEach(el => {
+            handlePopupNote(el);
+        });
+}
+
+function handlePopupNote(el) {
+    focusedNote = el;
             let text = el.innerHTML.replace(/<br>/g, "");
             if (verifyEncryptJson(text)) {
+                decryptButton.classList.add("decryptBtn");
+                decryptButton.classList.add("cryptorBtn");
                 el.parentElement.appendChild(decryptButton);
                 encryptedText = text;
-                //overlay.appendChild(decryptButton);
             }
-        });
+}
+
+function showPasswordInput() {
+    let inputNode = document.createElement("input");
+    inputNode.inputMode = "password";
+
+    // focusedNote.classList.forEach(cls => {
+    //     inputNode.classList.add(cls);
+    // });
+    // noteclone.innerHTML = "Please input password";
+    focusedNote.parentElement.appendChild(inputNode);
 }
 
 function decryptNote(noteContent, password) {
