@@ -8,11 +8,25 @@ const noteContentClass = noteClasses[noteClasses.length - 1];
 // inputField.setAttribute("encryptorinjected", "true");
 console.log(noteContentClass);
 
+// create dom elements
+const overlay = document.createElement("div");
+const encryptButton = document.createElement("button");
+encryptButton.name = "Encrypt";
+const decryptButton = document.createElement("button");
+decryptButton.name = "decrypt_btn";
+decryptButton.innerText = "Decrypt";
+let encryptedText;
+
+decryptButton.addEventListener("click", _=> {
+    alert(decryptNote(encryptedText, password));
+});
+
 function isStringMaybeEncrypted(note){
     return note.includes("{\"iv\":");
 }
 
 function verifyEncryptJson(note) {
+    // Pre-selection
     if (!note.includes("{\"iv\":"))
         return false;
 
@@ -36,10 +50,9 @@ function findPopupNote() {
         .forEach(el => {
             let text = el.innerHTML.replace(/<br>/g, "");
             if (verifyEncryptJson(text)) {
-                alert(decryptNote(text));
-            }
-            else {
-                alert("this note is not encrypted");
+                el.parentElement.appendChild(decryptButton);
+                encryptedText = text;
+                //overlay.appendChild(decryptButton);
             }
         });
 }
@@ -53,15 +66,12 @@ function decryptNote(noteContent, password) {
     }
 }
 
-
-
 //-----------
 // Monitoring
 // Callback function to execute when mutations are observed
 const config = { childList: true, subtree: true };
 const callback = function(mutationsList, observer) {
     if (mutationsList.length > 10) { // won't observe small changes
-        console.log(mutationsList);
         observer.disconnect();
         setTimeout(_ => {
             if (mutationsList[0].type === 'childList') {
