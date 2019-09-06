@@ -10,21 +10,29 @@ console.log(noteContentClass);
 
 // create dom elements
 const overlay = document.createElement("div");
-const encryptButton = document.createElement("div");
-encryptButton.name = "Encrypt";
+overlay.classList.add("overlay");
+
 const decryptButton = document.createElement("div");
 decryptButton.name = "decrypt_btn";
-let encryptedText, focusedNote;
-let pinButtonClasses;
-
-decryptButton.addEventListener("click", _=> {
-    alert(decryptNote(encryptedText, password));
+decryptButton.addEventListener("click", event => {
+    event.stopPropagation();
+    //alert(decryptNote(encryptedText, "iqui9oob"));
     showPasswordInput();
 });
 
-function isStringMaybeEncrypted(note){
-    return note.includes("{\"iv\":");
-}
+const inputNode = document.createElement("input");
+inputNode.type = "password";
+inputNode.setAttribute("contenteditable", "true");
+inputNode.setAttribute("role","textbox");
+inputNode.setAttribute("aria-multiline", "false");
+inputNode.classList.add("password");
+inputNode.addEventListener("click", event => {
+    event.stopPropagation();
+    inputNode.focus();
+});
+
+let encryptedText, focusedNote;
+let pinButtonClasses;
 
 function verifyEncryptJson(note) {
     // Pre-selection
@@ -55,24 +63,27 @@ function findPopupNote() {
 
 function handlePopupNote(el) {
     focusedNote = el;
-            let text = el.innerHTML.replace(/<br>/g, "");
-            if (verifyEncryptJson(text)) {
-                decryptButton.classList.add("decryptBtn");
-                decryptButton.classList.add("cryptorBtn");
-                el.parentElement.appendChild(decryptButton);
-                encryptedText = text;
-            }
+    let text = el.innerHTML.replace(/<br>/g, "");
+    if (verifyEncryptJson(text)) {
+        decryptButton.classList.add("decryptBtn");
+        decryptButton.classList.add("cryptorBtn");
+        overlay.appendChild(decryptButton);
+        el.parentElement.appendChild(overlay);
+        encryptedText = text;
+    }
 }
 
 function showPasswordInput() {
-    let inputNode = document.createElement("input");
-    inputNode.inputMode = "password";
-
-    // focusedNote.classList.forEach(cls => {
-    //     inputNode.classList.add(cls);
-    // });
-    // noteclone.innerHTML = "Please input password";
-    focusedNote.parentElement.appendChild(inputNode);
+    inputNode.innerText = "";
+    overlay.insertBefore(inputNode, decryptButton);
+    inputNode.focus();
+    inputNode.addEventListener("keydown", event => {
+        event.stopPropagation();
+        if(event.key === "Enter"){
+            inputNode.value = "";
+            alert(decryptNote(encryptedText, inputNode.value));
+        }
+    });
 }
 
 function decryptNote(noteContent, password) {
