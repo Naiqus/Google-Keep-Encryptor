@@ -9,8 +9,8 @@ const noteContentClass = noteClasses[noteClasses.length - 1];
 console.log(noteContentClass);
 
 // create dom elements
-const overlay = document.createElement("div");
-overlay.classList.add("overlay");
+const btnsOverlay = document.createElement("div");
+btnsOverlay.classList.add("overlay");
 
 const decryptButton = document.createElement("div");
 decryptButton.name = "decrypt_btn";
@@ -20,18 +20,17 @@ decryptButton.addEventListener("click", event => {
     showPasswordInput();
 });
 
-const inputNode = document.createElement("input");
-inputNode.type = "password";
-inputNode.setAttribute("contenteditable", "true");
-inputNode.setAttribute("role","textbox");
-inputNode.setAttribute("aria-multiline", "false");
-inputNode.classList.add("password");
-inputNode.addEventListener("click", event => {
-    event.stopPropagation();
-    inputNode.focus();
-});
+const pwInput = document.createElement("input");
+pwInput.type = "password";
+pwInput.setAttribute("contenteditable", "true");
+pwInput.setAttribute("role", "textbox");
+pwInput.setAttribute("aria-multiline", "false");
+pwInput.classList.add("password");
+pwInput.addEventListener("click", fixCallback);
 
-let encryptedText, focusedNote;
+let divOverlay = document.createElement("div");
+
+let cipherText, openedNote;
 let pinButtonClasses;
 
 function verifyEncryptJson(note) {
@@ -39,14 +38,13 @@ function verifyEncryptJson(note) {
     if (!note.includes("{\"iv\":"))
         return false;
 
-    try{
+    try {
         const encrypJson = JSON.parse(note);
         if (encrypJson.hasOwnProperty("iv")) {
             return true;
         }
         return false;
-    }
-    catch(e) {
+    } catch (e) {
         return false;
     }
 }
@@ -62,44 +60,85 @@ function findPopupNote() {
 }
 
 function handlePopupNote(el) {
-    focusedNote = el;
+    openedNote = el;
     let text = el.innerHTML.replace(/<br>/g, "");
     if (verifyEncryptJson(text)) {
         decryptButton.classList.add("decryptBtn");
         decryptButton.classList.add("cryptorBtn");
-        overlay.appendChild(decryptButton);
-        el.parentElement.appendChild(overlay);
-        encryptedText = text;
+        btnsOverlay.appendChild(decryptButton);
+        el.parentElement.appendChild(btnsOverlay);
+        cipherText = text;
     }
 }
 
 function showPasswordInput() {
-    inputNode.innerText = "";
-    overlay.insertBefore(inputNode, decryptButton);
-    inputNode.focus();
-    inputNode.addEventListener("keydown", event => {
+    pwInput.innerText = "";
+    btnsOverlay.insertBefore(pwInput, decryptButton);
+    pwInput.focus();
+    pwInput.addEventListener("keydown", event => {
         event.stopPropagation();
-        if(event.key === "Enter"){
-            inputNode.value = "";
-            alert(decryptNote(encryptedText, inputNode.value));
+        if (event.key === "Enter") {
+            let text = decryptNote(cipherText, pwInput.value);
+            showNoteOverlay(text);
+            pwInput.value = "";
         }
     });
 }
 
-function decryptNote(noteContent, password) {
-    try{
-        return sjcl.json.decrypt(password, noteContent)
-    } catch(e) {
+function showNoteOverlay(text) {
+    openedNote.classList.forEach(cls => {
+        divOverlay.classList.add(cls);
+    });
+    openedNote.style.display = "none";
+    openedNote.parentElement.insertBefore(divOverlay, openedNote);
+    divOverlay.innerHTML = text;
+    divOverlay.setAttribute("contenteditable", "true");
+    divOverlay.setAttribute("role", "textbox");
+    divOverlay.setAttribute("aria-multiline", "true");
+    divOverlay.addEventListener("keydown", fixCallback);
+    divOverlay.addEventListener("keypress", fixCallback);
+    divOverlay.addEventListener("input", event => {
+        openedNote.innerHTML = onPlainTextChange(event);
+        openedNote.dispatchEvent(new Event("input"));
+    });
+    divOverlay.addEventListener("click", fixCallback);
+
+}
+
+function onPlainTextChange(event) {
+    event.stopPropagation();
+    cipherText = encryptNote(pwInput.value, divOverlay.innerHTML);
+    return cipherText;
+}
+
+function decryptNote(text, password) {
+    try {
+        return sjcl.json.decrypt(password, text)
+    } catch (e) {
         console.log(e);
-        return e.msg;
+        //return e.msg;
+    }
+}
+
+function encryptNote(password, text) {
+    try{
+        let test = sjcl.json.encrypt(password, text);
+        console.log(test);
+        return test;
+    } catch (e) {
+        console.log(e);
+        //return e.msg;
     }
 }
 
 //-----------
 // Monitoring
 // Callback function to execute when mutations are observed
-const config = { childList: true, subtree: true };
-const callback = function(mutationsList, observer) {
+const config = {
+    childList: true,
+    subtree: true
+};
+const callback = function (mutationsList, observer) {
     if (mutationsList.length > 10) { // won't observe small changes
         observer.disconnect();
         setTimeout(_ => {
@@ -109,7 +148,7 @@ const callback = function(mutationsList, observer) {
                 observer.observe(document, config);
             }
         }, throttleDuration)
-        
+
     }
 };
 
@@ -117,3 +156,7 @@ const callback = function(mutationsList, observer) {
 const observer = new MutationObserver(callback);
 // Start observing the target node for configured mutations
 observer.observe(document, config);
+
+function fixCallback(event) {
+    event.stopPropagation();
+}
