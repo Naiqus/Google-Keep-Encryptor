@@ -78,17 +78,20 @@ function getOpenedNote() {
 }
 
 function handleOpenedNote(el) {
+    console.log("handle Opened note");
     openedNote = el;
     let text = el.innerHTML.replace(/<br>/g, "");
 
     showBtnsOverlay(el);
 
     if (verifyEncryptJson(text)) {
+        // The note is an encrypted one
         showLockIcon();
         setLockBtnCallback(showPasswordCallBack);
         cipherText = text;
         isNoteEncrypted = true;
     } else {
+        // The note is a plain text one
         showUnlockIcon();
         setLockBtnCallback(createEncryptedNoteCallback);
         plainText = el.innerHTML;
@@ -135,7 +138,6 @@ function decryptNote(text, password) {
 function encryptNote(password, text) {
     try{
         let test = sjcl.json.encrypt(password, text);
-        console.log(test);
         return test;
     } catch (e) {
         console.log(e);
@@ -176,6 +178,21 @@ function showPasswordCallBack(event) {
 function createEncryptedNoteCallback(event) {
     console.log("createEncryptedNoteCallback");
     event.stopPropagation();
+    
+    showNoteOverlay(openedNote.innerHTML);
+    // Show password field
+    pwInput.innerText = "";
+    if (!btnsOverlay.contains(pwInput)){
+        btnsOverlay.insertBefore(pwInput, lockBtn);
+        pwInput.addEventListener("keydown", event => {
+            event.stopPropagation();
+            if (event.key === "Enter")
+                lockBtn.click();
+        });
+    }
+    // Now lock button will encrypt the note
+    setLockBtnCallback(encryptNoteCallback);
+
 }
 
 function decryptNoteCallback(event) {
@@ -193,10 +210,8 @@ function decryptNoteCallback(event) {
 function encryptNoteCallback(event) {
     console.log("encryptNoteCallback");
     event.stopPropagation();
-    if (isNoteEncrypted) {
-        openedNote.innerHTML = encryptNote(pwInput.value, noteOverlay.innerHTML);
-        openedNote.dispatchEvent(new Event("input")); 
-    }
+    openedNote.innerHTML = encryptNote(pwInput.value, noteOverlay.innerHTML);
+    openedNote.dispatchEvent(new Event("input")); 
 }
 
 function setLockBtnCallback(callback){
