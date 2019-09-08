@@ -1,0 +1,73 @@
+.cryptorBtn {
+    cursor: pointer;
+    display: inline-block;
+    outline: none!important;
+    opacity: .71;
+    height: 16px;
+    width: 16px;
+    top: 50%;
+    margin-top: -10px; 
+    border: 1px solid transparent;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 201;
+    position: absolute;
+    transition: opacity .218s ease-in;
+
+}
+
+.decryptBtn{
+    right: 0px;
+    background-size: 24px 24px;
+}
+
+.encryptBtn .cryptorBtn{
+    right: 88px;
+}
+
+.password {
+    white-space: nowrap;
+    right: 26px;
+    opacity: .71;
+    height: 22px;
+    width: 120px;
+    border: 1px solid;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 201;
+    position: absolute;
+    transition: opacity .218s ease-in;
+    overflow: hidden;
+}
+
+[contenteditable="true"].password br {
+    display:none;
+
+}
+[contenteditable="true"].password * {
+    display:inline;
+    white-space:nowrap;
+}
+
+.btn-overlay {
+    cursor: pointer;
+    display: inline-block;
+    outline: none!important;
+    top: 16px;
+    right: 45px;
+    height: 24px;
+    width: 200px;
+    z-index: 201;
+    position: absolute;
+}
+
+.note-overlay {
+    border-style: dotted;
+    border-width: 2px;
+    margin: 5px;
+}
+
+.icon {
+    width: 20px;
+    height: 5px;
+}
