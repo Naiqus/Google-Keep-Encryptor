@@ -131,7 +131,10 @@ function decryptNote(text, password) {
         isDecryptSuccess = true;
         return decryptText;
     } catch (e) {
+        isDecryptSuccess = false;
         console.log(e);
+        return null;
+
     }
 }
 
@@ -200,7 +203,7 @@ function decryptNoteCallback(event) {
     event.stopPropagation();
     password = pwInput.value;
     let text = decryptNote(cipherText, password);
-    if (isDecryptSuccess) {
+    if (isDecryptSuccess && text !== null) {
         showUnlockIcon();
         showNoteOverlay(text);
         setLockBtnCallback(encryptNoteCallback);

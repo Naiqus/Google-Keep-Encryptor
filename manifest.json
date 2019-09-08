@@ -1,7 +1,7 @@
 {
     "name": "Google Keep Encryptor",
     "description": "Google Keep Encryptor",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "permissions": ["activeTab","declarativeContent",
         "webNavigation", "*://*/*"],
     "background": {
@@ -12,10 +12,10 @@
         {
             "matches": ["https://keep.google.com/*"],
             "js": [
-                "injection/sjcl.js",
-                "injection/inject.js"
+                "content-scripts/sjcl.js",
+                "content-scripts/content.js"
             ],
-            "css": ["inject.css"],
+            "css": ["content.css"],
             "run_at": "document_end"
         }
     ],
