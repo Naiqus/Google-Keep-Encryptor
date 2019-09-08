@@ -15,7 +15,8 @@
                 "injection/sjcl.js",
                 "injection/inject.js"
             ],
-            "css": ["inject.css"]
+            "css": ["inject.css"],
+            "run_at": "document_end"
         }
     ],
     "page_action": {

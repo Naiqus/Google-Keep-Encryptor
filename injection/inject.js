@@ -6,19 +6,23 @@ const noteClasses = notes[1].classList; // note[1] is always the input note bar
 // Get the uglified class name of the note's content
 const noteContentClass = noteClasses[noteClasses.length - 1];
 // inputField.setAttribute("encryptorinjected", "true");
-console.log(noteContentClass);
+// Get current font color 
+const color = getComputedStyle(notes[1]).color;
+console.log(noteContentClass, color);
 
 // create dom elements
 const btnsOverlay = document.createElement("div");
-btnsOverlay.classList.add("overlay");
+btnsOverlay.classList.add("btn-overlay");
 
-const decryptButton = document.createElement("div");
-decryptButton.name = "decrypt_btn";
-decryptButton.addEventListener("click", event => {
+const lockBtn = document.createElement("div");
+lockBtn.name = "decrypt_btn";
+lockBtn.addEventListener("click", event => {
     event.stopPropagation();
     //alert(decryptNote(encryptedText, "iqui9oob"));
     showPasswordInput();
 });
+const lockedHtml = `<svg focusable="false" data-icon="lock" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path class="icon" fill="white" d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path></svg>`
+const unlockedHtml = `<svg focusable="false" data-icon="unlock" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path class="icon" fill="currentColor" d="M400 256H152V152.9c0-39.6 31.7-72.5 71.3-72.9 40-.4 72.7 32.1 72.7 72v16c0 13.3 10.7 24 24 24h32c13.3 0 24-10.7 24-24v-16C376 68 307.5-.3 223.5 0 139.5.3 72 69.5 72 153.5V256H48c-26.5 0-48 21.5-48 48v160c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V304c0-26.5-21.5-48-48-48z"></path></svg>`;
 
 let password;
 
@@ -30,10 +34,14 @@ pwInput.setAttribute("aria-multiline", "false");
 pwInput.classList.add("password");
 pwInput.addEventListener("click", fixCallback);
 
-let divOverlay = document.createElement("div");
+let noteOverlay = document.createElement("div");
+noteOverlay.classList.add("note-overlay");
+noteOverlay.style.borderColor = color;
 
-let cipherText, openedNote;
+let cipherText, plainText, openedNote, isNoteEncrypted;
 let pinButtonClasses;
+
+showBtnsOverlay(notes[1]);
 
 function verifyEncryptJson(note) {
     // Pre-selection
@@ -71,19 +79,22 @@ function findPopupNote() {
 function handlePopupNote(el) {
     openedNote = el;
     let text = el.innerHTML.replace(/<br>/g, "");
+
+    showBtnsOverlay(el);
+
     if (verifyEncryptJson(text)) {
-        decryptButton.classList.add("decryptBtn");
-        decryptButton.classList.add("cryptorBtn");
-        btnsOverlay.appendChild(decryptButton);
-        el.parentElement.appendChild(btnsOverlay);
+        showLockIcon();
         cipherText = text;
+    } else {
+        showUnlockIcon();
+        plainText = el.innerHTML;
     }
 }
 
 function showPasswordInput() {
     pwInput.innerText = "";
     if (!btnsOverlay.contains(pwInput)){
-        btnsOverlay.insertBefore(pwInput, decryptButton);
+        btnsOverlay.insertBefore(pwInput, lockBtn);
         pwInput.addEventListener("keydown", event => {
             event.stopPropagation();
             password = pwInput.value;
@@ -99,28 +110,35 @@ function showPasswordInput() {
 
 function showNoteOverlay(text) {
     openedNote.classList.forEach(cls => {
-        divOverlay.classList.add(cls);
+        noteOverlay.classList.add(cls);
     });
     openedNote.style.display = "none";
-    openedNote.parentElement.insertBefore(divOverlay, openedNote);
-    divOverlay.innerHTML = text;
-    divOverlay.setAttribute("contenteditable", "true");
-    divOverlay.setAttribute("role", "textbox");
-    divOverlay.setAttribute("aria-multiline", "true");
-    divOverlay.addEventListener("keydown", fixCallback);
-    divOverlay.addEventListener("keypress", fixCallback);
-    divOverlay.addEventListener("input", event => {
-        openedNote.innerHTML = onPlainTextChange(event);
-        openedNote.dispatchEvent(new Event("input"));
-    });
-    divOverlay.addEventListener("click", fixCallback);
+    openedNote.parentElement.insertBefore(noteOverlay, openedNote);
+    noteOverlay.innerHTML = text;
+    noteOverlay.setAttribute("contenteditable", "true");
+    noteOverlay.setAttribute("role", "textbox");
+    noteOverlay.setAttribute("aria-multiline", "true");
+    noteOverlay.addEventListener("keydown", fixCallback);
+    noteOverlay.addEventListener("keypress", fixCallback);
+    noteOverlay.addEventListener("click", fixCallback);
+    noteOverlay.addEventListener("input", onNoteChange);
 
 }
 
-function onPlainTextChange(event) {
+function showBtnsOverlay(parentElement){
+    // Add button overlay
+    lockBtn.classList.add("decryptBtn");
+    // decryptButton.style.add("color: ")
+    lockBtn.classList.add("cryptorBtn");
+    btnsOverlay.appendChild(lockBtn);
+    parentElement.parentElement.appendChild(btnsOverlay);
+
+}
+
+function onNoteChange(event) {
     event.stopPropagation();
-    cipherText = encryptNote(pwInput.value, divOverlay.innerHTML);
-    return cipherText;
+    openedNote.innerHTML = encryptNote(pwInput.value, noteOverlay.innerHTML);
+    openedNote.dispatchEvent(new Event("input"));
 }
 
 function decryptNote(text, password) {
@@ -143,6 +161,17 @@ function encryptNote(password, text) {
     }
 }
 
+function showLockIcon(){
+    lockBtn.innerHTML = lockedHtml;
+    const lockedIcon = lockBtn.getElementsByClassName("icon")[0];
+    lockedIcon.style.fill = color;
+}
+
+function showUnlockIcon(){
+    lockBtn.innerHTML = unlockedHtml;
+    const lockedIcon = lockBtn.getElementsByClassName("icon")[0];
+    lockedIcon.style.fill = color;
+}
 //-----------
 // Monitoring
 // Callback function to execute when mutations are observed
