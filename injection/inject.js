@@ -20,6 +20,8 @@ decryptButton.addEventListener("click", event => {
     showPasswordInput();
 });
 
+let password;
+
 const pwInput = document.createElement("input");
 pwInput.type = "password";
 pwInput.setAttribute("contenteditable", "true");
@@ -56,7 +58,14 @@ function findPopupNote() {
         .filter(el => el.getAttribute('contenteditable') == "true")
         .forEach(el => {
             handlePopupNote(el);
+            return;
         });
+    // No popup note found.
+    if (btnsOverlay.contains(pwInput)){
+        btnsOverlay.removeChild(pwInput);
+        pwInput.value = "";
+        password = "";
+    }
 }
 
 function handlePopupNote(el) {
@@ -73,16 +82,19 @@ function handlePopupNote(el) {
 
 function showPasswordInput() {
     pwInput.innerText = "";
-    btnsOverlay.insertBefore(pwInput, decryptButton);
+    if (!btnsOverlay.contains(pwInput)){
+        btnsOverlay.insertBefore(pwInput, decryptButton);
+        pwInput.addEventListener("keydown", event => {
+            event.stopPropagation();
+            password = pwInput.value;
+            if (event.key === "Enter") {
+                let text = decryptNote(cipherText, password);
+                showNoteOverlay(text);
+                //pwInput.value = "";
+            }
+        });
+    }
     pwInput.focus();
-    pwInput.addEventListener("keydown", event => {
-        event.stopPropagation();
-        if (event.key === "Enter") {
-            let text = decryptNote(cipherText, pwInput.value);
-            showNoteOverlay(text);
-            pwInput.value = "";
-        }
-    });
 }
 
 function showNoteOverlay(text) {
@@ -139,6 +151,7 @@ const config = {
     subtree: true
 };
 const callback = function (mutationsList, observer) {
+    // Throttle the event to reduce the callback frequency.
     if (mutationsList.length > 10) { // won't observe small changes
         observer.disconnect();
         setTimeout(_ => {
