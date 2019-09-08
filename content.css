@@ -1,4 +1,4 @@
-.cryptorBtn {
+.cryptor-btn {
     cursor: pointer;
     display: inline-block;
     outline: none!important;
@@ -13,12 +13,9 @@
     z-index: 201;
     position: absolute;
     transition: opacity .218s ease-in;
-
-}
-
-.decryptBtn{
     right: 0px;
     background-size: 24px 24px;
+
 }
 
 .encryptBtn .cryptorBtn{
