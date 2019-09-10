@@ -1,3 +1,98 @@
+// ==UserScript==
+// @name         Google Keep Encryptor
+// @namespace    https://github.com/Naiqus/Google-Keep-Encryptor
+// @version      0.1
+// @description  Hide your sensible info from Google
+// @author       Naiqus
+// @match        https://keep.google.com/*
+// @grant        GM_addStyle
+// @require      https://raw.githubusercontent.com/bitwiseshiftleft/sjcl/master/sjcl.js
+// ==/UserScript==
+
+// CSS
+
+const css = `.cryptor-btn {
+    cursor: pointer;
+    display: inline-block;
+    outline: none!important;
+    opacity: .71;
+    height: 16px;
+    width: 16px;
+    top: 50%;
+    margin-top: -10px;
+    border: 1px solid transparent;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 201;
+    position: absolute;
+    transition: opacity .218s ease-in;
+    right: 0px;
+    background-size: 24px 24px;
+    transition: 0.5s;
+}
+
+.encryptBtn .cryptorBtn{
+    right: 88px;
+}
+
+.password {
+    white-space: nowrap;
+    right: 26px;
+    opacity: .71;
+    height: 22px;
+    width: 120px;
+    border: 1px solid;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 201;
+    position: absolute;
+    transition: opacity .218s ease-in;
+    overflow: hidden;
+}
+
+[contenteditable="true"].password br {
+    display:none;
+
+}
+[contenteditable="true"].password * {
+    display:inline;
+    white-space:nowrap;
+}
+
+.btn-overlay {
+    cursor: pointer;
+    display: inline-block;
+    outline: none!important;
+    top: 16px;
+    right: 45px;
+    height: 24px;
+    width: 200px;
+    z-index: 201;
+    position: absolute;
+}
+
+.note-overlay {
+    border-style: dotted;
+    border-width: 2px;
+    margin: 5px;
+}
+
+.icon {
+    width: 20px;
+    height: 5px;
+    transition: 0.5s;
+}
+
+.icon-dark:hover {
+    fill: #ffffff;
+}
+
+.icon:hover {
+    fill: #000000;
+}`;
+
+GM_addStyle(css);
+
 // Get all the notes
 const throttleDuration = 500; //0.5 second
 let notes = document.querySelectorAll('[aria-multiline="true"]');
@@ -12,7 +107,7 @@ createNoteField.addEventListener("click", _ => {
 
 let isNoteOpened = false;
 
-// Get current font color 
+// Get current font color
 const color = getComputedStyle(notes[1]).color;
 console.log(noteContentClass, color);
 const rgb = color.substring(4, color.length-1)
@@ -89,7 +184,7 @@ function getOpenedNote() {
         pwInput.value = "";
         password = "";
     }
-    
+
     if(isNoteOpened == true && openedNote.isSameNode(createNoteField)) {
         console.log("Closed note creation field");
     }
@@ -202,7 +297,7 @@ function showPasswordCallBack(event) {
 function createEncryptedNoteCallback(event) {
     console.log("createEncryptedNoteCallback");
     event.stopPropagation();
-    
+
     showNoteOverlay(openedNote.innerHTML);
     // Show password field
     pwInput.innerText = "";
@@ -235,7 +330,7 @@ function encryptNoteCallback(event) {
     console.log("encryptNoteCallback");
     event.stopPropagation();
     openedNote.innerHTML = encryptNote(pwInput.value, noteOverlay.innerHTML);
-    openedNote.dispatchEvent(new Event("input")); 
+    openedNote.dispatchEvent(new Event("input"));
 }
 
 function setLockBtnCallback(callback){
