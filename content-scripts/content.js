@@ -1,14 +1,27 @@
 // Get all the notes
 const throttleDuration = 500; //0.5 second
 let notes = document.querySelectorAll('[aria-multiline="true"]');
-const inputField = notes[1];
+const createNoteField = notes[1];
 const noteClasses = notes[1].classList; // note[1] is always the input note bar
 // Get the uglified class name of the note's content
 const noteContentClass = noteClasses[noteClasses.length - 1];
-// inputField.setAttribute("encryptorinjected", "true");
+
+createNoteField.addEventListener("click", _ => {
+    handleOpenedNote(createNoteField);
+});
+
+let isNoteOpened = false;
+
 // Get current font color 
 const color = getComputedStyle(notes[1]).color;
 console.log(noteContentClass, color);
+const rgb = color.substring(4, color.length-1)
+         .replace(/ /g, '')
+         .split(',')
+         .map(x => parseInt(x));
+
+// Deal with btn's onhover style, can be overkill
+const btnHoverColor = rgb[0] < 100 ? "icon-dark" : "icon-light";
 
 // create dom elements
 const btnsOverlay = document.createElement("div");
@@ -66,6 +79,7 @@ function getOpenedNote() {
         .filter(el => el.innerHTML != '')
         .filter(el => el.getAttribute('contenteditable') == "true")
         .forEach(el => {
+            isNoteOpened = true;
             handleOpenedNote(el);
             return;
         });
@@ -75,6 +89,11 @@ function getOpenedNote() {
         pwInput.value = "";
         password = "";
     }
+    
+    if(isNoteOpened == true && openedNote.isSameNode(createNoteField)) {
+        console.log("Closed note creation field");
+    }
+    isNoteOpened = false;
 }
 
 function handleOpenedNote(el) {
@@ -151,12 +170,14 @@ function showLockIcon(){
     lockBtn.innerHTML = lockedHtml;
     const lockedIcon = lockBtn.getElementsByClassName("icon")[0];
     lockedIcon.style.fill = color;
+    // lockedIcon.classList.add(btnHoverColor);
 }
 
 function showUnlockIcon(){
     lockBtn.innerHTML = unlockedHtml;
     const lockedIcon = lockBtn.getElementsByClassName("icon")[0];
     lockedIcon.style.fill = color;
+    // lockedIcon.classList.add(btnHoverColor);
 }
 
 //------------------
