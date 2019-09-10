@@ -90,13 +90,17 @@ function getOpenedNote() {
         password = "";
     }
     
-    if(isNoteOpened == true && openedNote.isSameNode(createNoteField)) {
-        console.log("Closed note creation field");
-    }
+    // if(isNoteOpened == true && openedNote.isSameNode(createNoteField)) {
+    //     console.log("Closed note creation field");
+    // }
     isNoteOpened = false;
 }
 
 function handleOpenedNote(el) {
+
+    if (openedNote != null && el.isSameNode(openedNote))
+        return;
+        
     console.log("handle Opened note");
     openedNote = el;
     let text = el.innerHTML.replace(/<br>/g, "");
@@ -146,7 +150,7 @@ function showBtnsOverlay(parentElement){
 
 function decryptNote(text, password) {
     try {
-        decryptText = sjcl.json.decrypt(password, text)
+        let decryptText = sjcl.json.decrypt(password, text)
         isDecryptSuccess = true;
         return decryptText;
     } catch (e) {
