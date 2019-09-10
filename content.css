@@ -58,6 +58,10 @@
     position: absolute;
 }
 
+.create-field{
+    top: 10px;
+}
+
 .note-overlay {
     border-style: dotted;
     border-width: 2px;

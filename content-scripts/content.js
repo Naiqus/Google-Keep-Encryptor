@@ -6,10 +6,6 @@ const noteClasses = notes[1].classList; // note[1] is always the input note bar
 // Get the uglified class name of the note's content
 const noteContentClass = noteClasses[noteClasses.length - 1];
 
-createNoteField.addEventListener("click", _ => {
-    handleOpenedNote(createNoteField);
-});
-
 let isNoteOpened = false;
 
 // Get current font color 
@@ -55,6 +51,11 @@ let cipherText, plainText, openedNote, isNoteEncrypted;
 let pinButtonClasses;
 let isDecryptSuccess = false;
 
+createNoteField.addEventListener("click", _ => {
+    btnsOverlay.classList.add("create-field"); //In creation field the button is lower
+    handleOpenedNote(createNoteField);
+});
+
 showBtnsOverlay(notes[1]);
 
 function verifyEncryptJson(note) {
@@ -74,6 +75,7 @@ function verifyEncryptJson(note) {
 }
 
 function getOpenedNote() {
+    isNoteOpened = false;
     const editableNotes = document.getElementsByClassName(noteContentClass);
     Array.from(editableNotes)
         .filter(el => el.innerHTML != '')
@@ -81,19 +83,20 @@ function getOpenedNote() {
         .forEach(el => {
             isNoteOpened = true;
             handleOpenedNote(el);
-            return;
         });
-    // No popup note found.
-    if (btnsOverlay.contains(pwInput)){
-        btnsOverlay.removeChild(pwInput);
-        pwInput.value = "";
-        password = "";
-    }
     
-    // if(isNoteOpened == true && openedNote.isSameNode(createNoteField)) {
-    //     console.log("Closed note creation field");
-    // }
-    isNoteOpened = false;
+    // No popup note found.
+    if (!isNoteOpened) {
+        if (btnsOverlay.contains(pwInput)){
+            btnsOverlay.removeChild(pwInput);
+            pwInput.value = "";
+            password = "";
+        }
+        
+        btnsOverlay.classList.remove("create-field");
+        hideBtnsOverlay();
+        isNoteOpened = false;
+    }
 }
 
 function handleOpenedNote(el) {
@@ -144,8 +147,13 @@ function showNoteOverlay(text) {
 
 function showBtnsOverlay(parentElement){
     // Add button overlay
+    btnsOverlay.style.display = "inline-block";
     parentElement.parentElement.appendChild(btnsOverlay);
 
+}
+function hideBtnsOverlay(){
+    btnsOverlay.style.display = "none";
+    console.log("btns-overlay hidden");
 }
 
 function decryptNote(text, password) {
