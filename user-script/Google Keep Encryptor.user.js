@@ -6,6 +6,7 @@
 // @author       Naiqus
 // @match        https://keep.google.com/*
 // @grant        GM_addStyle
+// @license      The MIT License
 // @require      https://raw.githubusercontent.com/bitwiseshiftleft/sjcl/master/sjcl.js
 // ==/UserScript==
 
