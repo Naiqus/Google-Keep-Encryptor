@@ -2,11 +2,12 @@
 // @name         Google Keep Encryptor
 // @namespace    https://github.com/Naiqus/Google-Keep-Encryptor
 // @version      0.1
-// @description  Hide your sensible info from Google
+// @description  Hide your sensitive infomation from Google
 // @author       Naiqus
 // @match        https://keep.google.com/*
 // @grant        GM_addStyle
-// @license      The MIT License
+// @license      MIT
+// @copyright    Naiqus (https://github.com/naiqus)
 // @require      https://raw.githubusercontent.com/bitwiseshiftleft/sjcl/master/sjcl.js
 // ==/UserScript==
 
@@ -186,13 +187,16 @@ function getOpenedNote() {
         password = "";
     }
 
-    if(isNoteOpened == true && openedNote.isSameNode(createNoteField)) {
-        console.log("Closed note creation field");
-    }
+    // if(isNoteOpened == true && openedNote.isSameNode(createNoteField)) {
+    //     console.log("Closed note creation field");
+    // }
     isNoteOpened = false;
 }
 
 function handleOpenedNote(el) {
+    if (openedNote != null && el.isSameNode(openedNote))
+        return;
+        
     console.log("handle Opened note");
     openedNote = el;
     let text = el.innerHTML.replace(/<br>/g, "");
@@ -242,7 +246,7 @@ function showBtnsOverlay(parentElement){
 
 function decryptNote(text, password) {
     try {
-        decryptText = sjcl.json.decrypt(password, text)
+        let decryptText = sjcl.json.decrypt(password, text)
         isDecryptSuccess = true;
         return decryptText;
     } catch (e) {
