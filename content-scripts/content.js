@@ -11,10 +11,10 @@ let isNoteOpened = false;
 // Get current font color 
 const color = getComputedStyle(notes[1]).color;
 console.log(noteContentClass, color);
-const rgb = color.substring(4, color.length-1)
-         .replace(/ /g, '')
-         .split(',')
-         .map(x => parseInt(x));
+const rgb = color.substring(4, color.length - 1)
+    .replace(/ /g, '')
+    .split(',')
+    .map(x => parseInt(x));
 
 // Deal with btn's onhover style, can be overkill
 const btnHoverColor = rgb[0] < 100 ? "icon-dark" : "icon-light";
@@ -46,15 +46,22 @@ pwInput.addEventListener("click", fixCallback);
 let noteOverlay = document.createElement("div");
 noteOverlay.classList.add("note-overlay");
 noteOverlay.style.borderColor = color;
+noteOverlay.setAttribute("contenteditable", "true");
+noteOverlay.setAttribute("role", "textbox");
+noteOverlay.setAttribute("aria-multiline", "true");
+noteOverlay.addEventListener("keydown", fixCallback);
+noteOverlay.addEventListener("keypress", fixCallback);
+noteOverlay.addEventListener("click", fixCallback);
+noteOverlay.addEventListener("input", event => {
+    event.stopPropagation();
+    lockBtn.click();
+});
 
 let cipherText, plainText, openedNote, isNoteEncrypted;
 let pinButtonClasses;
 let isDecryptSuccess = false;
 
-createNoteField.addEventListener("click", _ => {
-    btnsOverlay.classList.add("create-field"); //In creation field the button is lower
-    handleOpenedNote(createNoteField);
-});
+resetCreateNoteFieldCallback();
 
 showBtnsOverlay(notes[1]);
 
@@ -75,35 +82,42 @@ function verifyEncryptJson(note) {
 }
 
 function getOpenedNote() {
+
     isNoteOpened = false;
     const editableNotes = document.getElementsByClassName(noteContentClass);
     Array.from(editableNotes)
-        .filter(el => el.innerHTML != '')
+        .filter(el => el.getAttribute('spellcheck') == "true")
         .filter(el => el.getAttribute('contenteditable') == "true")
         .forEach(el => {
             isNoteOpened = true;
             handleOpenedNote(el);
         });
-    
-    // No popup note found.
-    if (!isNoteOpened) {
-        if (btnsOverlay.contains(pwInput)){
-            btnsOverlay.removeChild(pwInput);
-            pwInput.value = "";
-            password = "";
-        }
-        
-        btnsOverlay.classList.remove("create-field");
-        hideBtnsOverlay();
-        isNoteOpened = false;
+
+    if (isNoteOpened)
+        return;
+
+    // No popup note found. Or note is closed
+    if (btnsOverlay.contains(pwInput)) {
+        btnsOverlay.removeChild(pwInput);
+        pwInput.value = "";
+        password = "";
     }
+
+    btnsOverlay.classList.remove("create-field");
+    hideBtnsOverlay();
+    hideNoteOverlay();
+    resetCreateNoteFieldCallback();
+    isNoteOpened = false;
+    isDecryptSuccess = false;
 }
 
 function handleOpenedNote(el) {
 
-    if (openedNote != null && el.isSameNode(openedNote))
+    if (isDecryptSuccess) {
+        console.log("Note decripted, do nothing");
         return;
-        
+    }
+
     console.log("handle Opened note");
     openedNote = el;
     let text = el.innerHTML.replace(/<br>/g, "");
@@ -130,28 +144,24 @@ function showNoteOverlay(text) {
     openedNote.classList.forEach(cls => {
         noteOverlay.classList.add(cls);
     });
-    openedNote.style.display = "none";
     openedNote.parentElement.insertBefore(noteOverlay, openedNote);
     noteOverlay.innerHTML = text;
-    noteOverlay.setAttribute("contenteditable", "true");
-    noteOverlay.setAttribute("role", "textbox");
-    noteOverlay.setAttribute("aria-multiline", "true");
-    noteOverlay.addEventListener("keydown", fixCallback);
-    noteOverlay.addEventListener("keypress", fixCallback);
-    noteOverlay.addEventListener("click", fixCallback);
-    noteOverlay.addEventListener("input", event => {
-        event.stopPropagation();
-        lockBtn.click();
-    });
+    noteOverlay.style.display = "block";
 }
 
-function showBtnsOverlay(parentElement){
+function hideNoteOverlay(text) {
+    // Decrypt succeed
+    noteOverlay.style.display = "none";
+}
+
+function showBtnsOverlay(parentElement) {
     // Add button overlay
     btnsOverlay.style.display = "inline-block";
     parentElement.parentElement.appendChild(btnsOverlay);
 
 }
-function hideBtnsOverlay(){
+
+function hideBtnsOverlay() {
     btnsOverlay.style.display = "none";
     console.log("btns-overlay hidden");
 }
@@ -170,7 +180,7 @@ function decryptNote(text, password) {
 }
 
 function encryptNote(password, text) {
-    try{
+    try {
         let test = sjcl.json.encrypt(password, text);
         return test;
     } catch (e) {
@@ -178,14 +188,14 @@ function encryptNote(password, text) {
     }
 }
 
-function showLockIcon(){
+function showLockIcon() {
     lockBtn.innerHTML = lockedHtml;
     const lockedIcon = lockBtn.getElementsByClassName("icon")[0];
     lockedIcon.style.fill = color;
     // lockedIcon.classList.add(btnHoverColor);
 }
 
-function showUnlockIcon(){
+function showUnlockIcon() {
     lockBtn.innerHTML = unlockedHtml;
     const lockedIcon = lockBtn.getElementsByClassName("icon")[0];
     lockedIcon.style.fill = color;
@@ -198,7 +208,7 @@ function showPasswordCallBack(event) {
     console.log("showPasswordCallBack");
     event.stopPropagation();
     pwInput.innerText = "";
-    if (!btnsOverlay.contains(pwInput)){
+    if (!btnsOverlay.contains(pwInput)) {
         btnsOverlay.insertBefore(pwInput, lockBtn);
         pwInput.addEventListener("keydown", event => {
             event.stopPropagation();
@@ -214,11 +224,11 @@ function showPasswordCallBack(event) {
 function createEncryptedNoteCallback(event) {
     console.log("createEncryptedNoteCallback");
     event.stopPropagation();
-    
+    isDecryptSuccess = true;
     showNoteOverlay(openedNote.innerHTML);
     // Show password field
     pwInput.innerText = "";
-    if (!btnsOverlay.contains(pwInput)){
+    if (!btnsOverlay.contains(pwInput)) {
         btnsOverlay.insertBefore(pwInput, lockBtn);
         pwInput.addEventListener("keydown", event => {
             event.stopPropagation();
@@ -247,14 +257,24 @@ function encryptNoteCallback(event) {
     console.log("encryptNoteCallback");
     event.stopPropagation();
     openedNote.innerHTML = encryptNote(pwInput.value, noteOverlay.innerHTML);
-    openedNote.dispatchEvent(new Event("input")); 
+    openedNote.dispatchEvent(new Event("input"));
 }
 
-function setLockBtnCallback(callback){
+function setLockBtnCallback(callback) {
     lockBtnCallbacks.forEach(cb => {
         lockBtn.removeEventListener("click", cb);
     });
     lockBtn.addEventListener("click", callback);
+}
+
+function createNoteFieldCallback(event) {
+    btnsOverlay.classList.add("create-field"); //In creation field the button is lower
+    handleOpenedNote(createNoteField);
+}
+
+function resetCreateNoteFieldCallback() {
+    createNoteField.removeEventListener("click", createNoteFieldCallback);
+    createNoteField.addEventListener("click", createNoteFieldCallback);
 }
 
 //-----------
@@ -287,3 +307,11 @@ observer.observe(document, config);
 function fixCallback(event) {
     event.stopPropagation();
 }
+
+const resizeObserver = new ResizeObserver(_ => {
+
+    console.log("Page length change found");
+    getOpenedNote();
+});
+
+resizeObserver.observe(createNoteField.parentElement);
