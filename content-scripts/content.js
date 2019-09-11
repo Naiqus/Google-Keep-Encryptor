@@ -290,7 +290,7 @@ const callback = function (mutationsList, observer) {
         observer.disconnect();
         setTimeout(_ => {
             if (mutationsList[0].type === 'childList') {
-                console.log('child node changed');
+                // console.log('child node changed');
                 getOpenedNote();
                 observer.observe(document, config);
             }
