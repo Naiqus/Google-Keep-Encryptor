@@ -1,8 +1,7 @@
 // Get all the notes
 const throttleDuration = 500; //0.5 second
-let notes = document.querySelectorAll('[aria-multiline="true"]');
-const createNoteField = notes[1];
-const noteClasses = notes[1].classList; // note[1] is always the input note bar
+let createNoteField = getCreateNoteField();
+const noteClasses = createNoteField.classList; // note[1] is always the input note bar
 // Get the uglified class name of the note's content
 const noteContentClass = noteClasses[noteClasses.length - 1];
 
@@ -36,108 +35,37 @@ const unlockedHtml = `<svg focusable="false" data-icon="unlock" role="img" xmlns
 let password;
 
 const pwInput = document.createElement("input");
-pwInput.type = "password";
-pwInput.setAttribute("contenteditable", "true");
-pwInput.setAttribute("role", "textbox");
-pwInput.setAttribute("aria-multiline", "false");
-pwInput.classList.add("password");
-pwInput.addEventListener("click", fixCallback);
-
 let noteOverlay = document.createElement("div");
-noteOverlay.classList.add("note-overlay");
-noteOverlay.style.borderColor = color;
-noteOverlay.setAttribute("contenteditable", "true");
-noteOverlay.setAttribute("role", "textbox");
-noteOverlay.setAttribute("aria-multiline", "true");
-noteOverlay.addEventListener("keydown", fixCallback);
-noteOverlay.addEventListener("keypress", fixCallback);
-noteOverlay.addEventListener("click", fixCallback);
-noteOverlay.addEventListener("input", event => {
-    event.stopPropagation();
-    lockBtn.click();
-});
 
 let cipherText, plainText, openedNote, isNoteEncrypted;
 let pinButtonClasses;
 let isDecryptSuccess = false;
 
-resetCreateNoteFieldCallback();
+//-----------------
+// Handling UI
+
+noteOverlay.classList.add("note-overlay");
+noteOverlay.style.borderColor = color;
+noteOverlay.setAttribute("contenteditable", "true");
+noteOverlay.setAttribute("role", "textbox");
+noteOverlay.setAttribute("aria-multiline", "true");
+noteOverlay.addEventListener("keydown", callbackHack);
+noteOverlay.addEventListener("keypress", callbackHack);
+noteOverlay.addEventListener("click", callbackHack);
+noteOverlay.addEventListener("input", event => {
+    event.stopPropagation();
+    lockBtn.click();
+});
+
+pwInput.type = "password";
+pwInput.setAttribute("contenteditable", "true");
+pwInput.setAttribute("role", "textbox");
+pwInput.setAttribute("aria-multiline", "false");
+pwInput.classList.add("password");
+pwInput.addEventListener("click", callbackHack);
+
 
 showBtnsOverlay(notes[1]);
-
-function verifyEncryptJson(note) {
-    // Pre-selection
-    if (!note.includes("{\"iv\":"))
-        return false;
-
-    try {
-        const encrypJson = JSON.parse(note);
-        if (encrypJson.hasOwnProperty("iv")) {
-            return true;
-        }
-        return false;
-    } catch (e) {
-        return false;
-    }
-}
-
-function getOpenedNote() {
-
-    isNoteOpened = false;
-    const editableNotes = document.getElementsByClassName(noteContentClass);
-    Array.from(editableNotes)
-        .filter(el => el.getAttribute('spellcheck') == "true")
-        .filter(el => el.getAttribute('contenteditable') == "true")
-        .forEach(el => {
-            isNoteOpened = true;
-            handleOpenedNote(el);
-        });
-
-    if (isNoteOpened)
-        return;
-
-    // No popup note found. Or note is closed
-    if (btnsOverlay.contains(pwInput)) {
-        btnsOverlay.removeChild(pwInput);
-        pwInput.value = "";
-        password = "";
-    }
-
-    btnsOverlay.classList.remove("create-field");
-    hideBtnsOverlay();
-    hideNoteOverlay();
-    resetCreateNoteFieldCallback();
-    isNoteOpened = false;
-    isDecryptSuccess = false;
-}
-
-function handleOpenedNote(el) {
-
-    if (isDecryptSuccess) {
-        console.log("Note decripted, do nothing");
-        return;
-    }
-
-    console.log("handle Opened note");
-    openedNote = el;
-    let text = el.innerHTML.replace(/<br>/g, "");
-
-    showBtnsOverlay(el);
-
-    if (verifyEncryptJson(text)) {
-        // The note is an encrypted one
-        showLockIcon();
-        setLockBtnCallback(showPasswordCallBack);
-        cipherText = text;
-        isNoteEncrypted = true;
-    } else {
-        // The note is a plain text one
-        showUnlockIcon();
-        setLockBtnCallback(createEncryptedNoteCallback);
-        plainText = el.innerHTML;
-        isNoteEncrypted = false;
-    }
-}
 
 function showNoteOverlay(text) {
     // Decrypt succeed
@@ -166,6 +94,92 @@ function hideBtnsOverlay() {
     console.log("btns-overlay hidden");
 }
 
+function showLockIcon() {
+    lockBtn.innerHTML = lockedHtml;
+    const lockedIcon = lockBtn.getElementsByClassName("icon")[0];
+    lockedIcon.style.fill = color;
+    // lockedIcon.classList.add(btnHoverColor);
+}
+
+function showUnlockIcon() {
+    lockBtn.innerHTML = unlockedHtml;
+    const lockedIcon = lockBtn.getElementsByClassName("icon")[0];
+    lockedIcon.style.fill = color;
+    // lockedIcon.classList.add(btnHoverColor);
+}
+
+//--------
+// Opened note detection
+
+function verifyEncryptJson(note) {
+    // Pre-selection
+    if (!note.includes("{\"iv\":"))
+        return false;
+
+    try {
+        const encrypJson = JSON.parse(note);
+        if (encrypJson.hasOwnProperty("iv")) {
+            return true;
+        }
+        return false;
+    } catch (e) {
+        return false;
+    }
+}
+
+function getOpenedNote() {
+    isNoteOpened = false;
+
+    Array.from(document.getElementsByClassName(noteContentClass)) // All notes
+        .filter(el => el.getAttribute('spellcheck') == "true")
+        .filter(el => el.getAttribute('contenteditable') == "true")
+        .forEach(el => {
+            isNoteOpened = true;
+            handleOpenedNote(el);
+        });
+
+    if (isNoteOpened)
+        return;
+
+    // No popup note found. Or note is closed
+    if (btnsOverlay.contains(pwInput)) {
+        btnsOverlay.removeChild(pwInput);
+        pwInput.value = "";
+        password = "";
+    }
+
+    btnsOverlay.classList.remove("create-field");
+    hideBtnsOverlay();
+    hideNoteOverlay();
+    isNoteOpened = false;
+    isDecryptSuccess = false;
+}
+
+function handleOpenedNote(el) {
+
+    if (isDecryptSuccess) { // The opened note is in encryption mode
+        return;
+    }
+    openedNote = el;
+    let text = el.innerHTML.replace(/<br>/g, "");
+
+    showBtnsOverlay(el);
+
+    if (verifyEncryptJson(text)) {
+        // The note is an encrypted one
+        showLockIcon();
+        setLockBtnCallback(showPasswordCallBack);
+        cipherText = text;
+        isNoteEncrypted = true;
+    } else {
+        // The note is a plain text one
+        showUnlockIcon();
+        setLockBtnCallback(createEncryptedNoteCallback);
+        plainText = el.innerHTML;
+        isNoteEncrypted = false;
+    }
+}
+
 function decryptNote(text, password) {
     try {
         let decryptText = sjcl.json.decrypt(password, text)
@@ -186,20 +200,6 @@ function encryptNote(password, text) {
     } catch (e) {
         console.log(e);
     }
-}
-
-function showLockIcon() {
-    lockBtn.innerHTML = lockedHtml;
-    const lockedIcon = lockBtn.getElementsByClassName("icon")[0];
-    lockedIcon.style.fill = color;
-    // lockedIcon.classList.add(btnHoverColor);
-}
-
-function showUnlockIcon() {
-    lockBtn.innerHTML = unlockedHtml;
-    const lockedIcon = lockBtn.getElementsByClassName("icon")[0];
-    lockedIcon.style.fill = color;
-    // lockedIcon.classList.add(btnHoverColor);
 }
 
 //------------------
@@ -267,16 +267,16 @@ function setLockBtnCallback(callback) {
     lockBtn.addEventListener("click", callback);
 }
 
-function createNoteFieldCallback(event) {
-    btnsOverlay.classList.add("create-field"); //In creation field the button is lower
-    handleOpenedNote(createNoteField);
+function callbackHack(event) {
+    event.stopPropagation();
 }
-
-function resetCreateNoteFieldCallback() {
-    createNoteField.removeEventListener("click", createNoteFieldCallback);
-    createNoteField.addEventListener("click", createNoteFieldCallback);
+// ----------
+// Create note field handling, it reset all the attributes, classes
+// and event listeners by the native code. Need to handle individually
+function getCreateNoteField() {
+    notes = document.querySelectorAll('[aria-multiline="true"]');
+    return notes[1];
 }
-
 //-----------
 // Monitoring
 // Callback function to execute when mutations are observed
@@ -290,7 +290,7 @@ const callback = function (mutationsList, observer) {
         observer.disconnect();
         setTimeout(_ => {
             if (mutationsList[0].type === 'childList') {
-                // console.log('child node changed');
+                console.log('child node changed');
                 getOpenedNote();
                 observer.observe(document, config);
             }
@@ -304,14 +304,16 @@ const observer = new MutationObserver(callback);
 // Start observing the target node for configured mutations
 observer.observe(document, config);
 
-function fixCallback(event) {
-    event.stopPropagation();
-}
+
 
 const resizeObserver = new ResizeObserver(_ => {
-
-    console.log("Page length change found");
+    // console.log('size changed');
+    if (btnsOverlay != null) {
+        btnsOverlay.classList.add("create-field"); //In creation field the button is lower
+    }
+    createNoteField = getCreateNoteField();
     getOpenedNote();
+    resizeObserver.observe(createNoteField.parentNode); // Has to call recursively to take effect
 });
 
-resizeObserver.observe(createNoteField.parentElement);
+resizeObserver.observe(createNoteField.parentNode);
