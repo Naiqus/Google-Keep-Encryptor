@@ -232,14 +232,14 @@ function showUnlockIcon() {
     // lockedIcon.classList.add(btnHoverColor);
 }
 
-function togglePasswordVisibility(event){
+function togglePasswordVisibility(event) {
     event.stopPropagation();
 
     if (isPasswordVisible) {
         pwInput.type = "text";
         eyeBtn.innerHTML = eyeSlashHtml;
         eyeBtn.getElementsByClassName("eye")[0].style.fill = color;
-    }else {
+    } else {
         pwInput.type = "password";
         eyeBtn.innerHTML = eyeHtml;
         eyeBtn.getElementsByClassName("eye")[0].style.fill = color;
@@ -255,7 +255,7 @@ function resetPasswordVisibility() {
     eyeBtn.getElementsByClassName("eye")[0].style.fill = color;
 }
 
-function hidePasswordContainer(){
+function hidePasswordContainer() {
     // btnsOverlay.removeChild(pwInput);
     pwInput.value = "";
     password = "";
@@ -263,7 +263,7 @@ function hidePasswordContainer(){
     pwContainer.style.display = "none";
 }
 
-function showPasswordContainer(inputCallback){ // input callback for 
+function showPasswordContainer(inputCallback) { // input callback for 
     pwContainer.style.display = "block";
     pwInput.removeEventListener("input", pwInputCallback);
     if (inputCallback) {
@@ -368,8 +368,7 @@ function showPasswordCallBack(event) {
     console.log("showPasswordCallBack");
     event.stopPropagation();
     showPasswordContainer(event => {
-        if (event.key === "Enter"){
-            // Now lock button will decrypt the note
+        if (event.key === "Enter") {
             lockBtn.click();
         }
     });
@@ -432,6 +431,7 @@ const config = {
     childList: true,
     subtree: true
 };
+
 const callback = function (mutationsList, observer) {
     // Throttle the event to reduce the callback frequency.
     if (mutationsList.length > 10) { // won't observe small changes
