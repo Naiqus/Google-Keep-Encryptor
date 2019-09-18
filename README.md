@@ -1,4 +1,4 @@
-# Google-Keep-Encryptor
+<img src="https://github.com/Naiqus/Google-Keep-Encryptor/raw/master/images/GKE%20Tile.png" alt="Tile" width="330px" height="210px">
 
 With Google Keep Encryptor, you can easily keep your sensitive information only with you and your trustworthy friends. Your text will be encrypted into ciphertext with the help of [Stanford Javascript Crypto Library
 ](http://bitwiseshiftleft.github.io/sjcl/).
@@ -7,7 +7,6 @@ With Google Keep Encryptor, you can easily keep your sensitive information only 
 
 Install from [Chrome Web Store](https://chrome.google.com/webstore/detail/google-keep-encryptor/cedkkpjolghccafognlkficihjmfedhc)
 
-![Screenshot](https://raw.githubusercontent.com/Naiqus/Google-Keep-Encryptor/master/images/GKE%20Screenshot.png)
-
+<img src="https://raw.githubusercontent.com/Naiqus/Google-Keep-Encryptor/master/images/GKE%20Screenshot.png" alt="Screenshot" width="600px" height="600px">
 
 **WARNING: If you don't remember the password, you will lose all the information on that encrypted note!!!** It's strongly recommended to use password hints as labels or add them to the titles of your encrypted notes.
