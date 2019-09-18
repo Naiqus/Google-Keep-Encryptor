@@ -20,10 +20,7 @@
         }
     ],
     "page_action": {
-        "default_popup": "popup.html",
-        "default_icon": {
-            "512": "images/icon512.png"
-          }
+
     },
     "icons": {
         "512": "images/icon512.png"
