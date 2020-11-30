@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Google Keep Encryptor
 // @namespace    https://github.com/Naiqus/Google-Keep-Encryptor
-// @version      0.1
+// @version      1.0.0
 // @description  Hide your sensitive information from Google
 // @author       Naiqus
 // @match        https://keep.google.com/*
