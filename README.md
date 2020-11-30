@@ -12,4 +12,4 @@ With Google Keep Encryptor, you can easily keep your sensitive information only 
 ## Installation
 
 - For Chrome: [Link to Chrome Web Store](https://chrome.google.com/webstore/detail/google-keep-encryptor/cedkkpjolghccafognlkficihjmfedhc)
-- For Firefox: Please install [Tampermonkey](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=recommended). Then install the UserScript from [here](https://openuserjs.org/scripts/Naiqus/Google_Keep_Encryptor#google-keep-encryptor)
+- For Firefox: Please install [Tampermonkey](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/). Then install the UserScript from [here](https://openuserjs.org/scripts/Naiqus/Google_Keep_Encryptor#google-keep-encryptor)

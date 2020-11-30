@@ -2,12 +2,7 @@
   "name": "Google Keep Encryptor",
   "description": "Google Keep Encryptor",
   "version": "1.0.0",
-  "permissions": [
-    "activeTab",
-    "declarativeContent",
-    "webNavigation",
-    "https://keep.google.com/*"
-  ],
+  "permissions": ["declarativeContent", "https://keep.google.com/*"],
   "background": {
     "scripts": ["background.js"],
     "persistent": true
