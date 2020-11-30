@@ -5,14 +5,14 @@ const eyeSlashHtml = `<svg focusable="false" data-icon="eye-slash" role="img" xm
 
 const noteContainerSelector = ".IZ65Hb-n0tgWb";
 const openedNoteContainerSelector = noteContainerSelector + ".IZ65Hb-QQhtn";
-
-const throttleDuration = 500; //0.5 second
+const createdNotesGroupContainerSelector =
+  ".gkA7Yd-sKfxWe.ma6Yeb-r8s4j-gkA7Yd>div";
 
 let isNoteOpened = false;
 
 let createNoteField;
 let noteClasses;
-let noteCOntentClass;
+let noteContentClass;
 
 // Password overlays
 let btnHoverColor;
@@ -31,16 +31,77 @@ let btnsOverlay;
 let lockBtn;
 let pwContainer;
 
+let openNoteObserver;
+let loadMoreNotesObserver;
+
 window.addEventListener("load", event => {
   init();
 });
 
 function init() {
+  setupUIOverlay();
+  //-----------
+  // Setup callbacks and subscriptions
+  openNoteObserver = new MutationObserver(getOpenedNote);
+  observeAllNotes();
+
+  let createdNoteGroupContainer = document.querySelector(
+    createdNotesGroupContainerSelector
+  );
+  loadMoreNotesObserver = new MutationObserver(observeAllNotes);
+  loadMoreNotesObserver.observe(createdNoteGroupContainer, {
+    childList: true,
+    attributes: false,
+    subtree: false
+  });
+
+  // Listen for popstate - triggered by forward and back buttons, and manual hash entry
+  window.addEventListener("popstate", getOpenedNote);
+
+  const resizeObserver = new ResizeObserver(_ => {
+    // console.log('size changed');
+    if (btnsOverlay != null) {
+      btnsOverlay.classList.add("create-field"); //In creation field the button is lower
+    }
+    createNoteField = getCreateNoteField();
+    getOpenedNote();
+    resizeObserver.observe(createNoteField.parentNode); // Has to call recursively to take effect
+  });
+
+  resizeObserver.observe(createNoteField.parentNode);
+
+  // Observe to the header, for dark/light mode toggle
+  var head = document.querySelector("head");
+  new MutationObserver(setupUIOverlay).observe(head, {
+    childList: true,
+    attributes: false,
+    subtree: false
+  });
+}
+
+function observeAllNotes() {
+  var notes = document.querySelectorAll(noteContainerSelector);
+  if (notes) {
+    notes.forEach(note => {
+      if (!note.classList.contains("gke-observed")) {
+        openNoteObserver.observe(note, {
+          childList: false,
+          subtree: false,
+          attributes: true
+        });
+        note.classList.add("gke-observed");
+      }
+    });
+  } else {
+    console.log("No notes found to be observed!");
+  }
+}
+
+function setupUIOverlay() {
   createNoteField = getCreateNoteField();
   noteClasses = createNoteField.classList; // note[1] is always the input note bar
   // Get the uglified class name of the note's content
   noteContentClass = noteClasses[noteClasses.length - 1];
-
   // Get current font color
   color = getComputedStyle(createNoteField).color;
   console.log(noteContentClass, color);
@@ -79,7 +140,6 @@ function init() {
 
   //-----------------
   // Handling UI
-
   noteOverlay.classList.add("note-overlay");
   noteOverlay.style.borderColor = color;
   noteOverlay.setAttribute("contenteditable", "true");
@@ -115,45 +175,6 @@ function init() {
   pwContainer.appendChild(eyeBtn);
 
   hidePasswordContainer();
-
-  //-----------
-  // Monitoring
-  // Callback function to execute when mutations are observed
-  const config = {
-    childList: true,
-    subtree: true
-  };
-  const callback = function(mutationsList, observer) {
-    // Throttle the event to reduce the callback frequency.
-    if (mutationsList.length > 10) {
-      // won't observe small changes
-      observer.disconnect();
-      setTimeout(_ => {
-        if (mutationsList[0].type === "childList") {
-          console.log("child node changed");
-          getOpenedNote();
-          observer.observe(document, config);
-        }
-      }, throttleDuration);
-    }
-  };
-
-  // Create an observer instance linked to the callback function
-  const observer = new MutationObserver(callback);
-  // Start observing the target node for configured mutations
-  observer.observe(document, config);
-
-  const resizeObserver = new ResizeObserver(_ => {
-    // console.log('size changed');
-    if (btnsOverlay != null) {
-      btnsOverlay.classList.add("create-field"); //In creation field the button is lower
-    }
-    createNoteField = getCreateNoteField();
-    getOpenedNote();
-    resizeObserver.observe(createNoteField.parentNode); // Has to call recursively to take effect
-  });
-
-  resizeObserver.observe(createNoteField.parentNode);
 }
 
 function showNoteOverlay(text) {
@@ -179,7 +200,7 @@ function showBtnsOverlay(parentElement) {
 
 function hideBtnsOverlay() {
   btnsOverlay.style.display = "none";
-  console.log("btns-overlay hidden");
+  //   console.log("btns-overlay hidden");
   hidePasswordContainer();
 }
 
