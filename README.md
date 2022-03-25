@@ -13,3 +13,12 @@ With Google Keep Encryptor, you can easily keep your sensitive information only 
 
 - For Chrome: [Link to Chrome Web Store](https://chrome.google.com/webstore/detail/google-keep-encryptor/cedkkpjolghccafognlkficihjmfedhc)
 - For Firefox: Please install [Tampermonkey](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/). Then install the UserScript from [here](https://openuserjs.org/scripts/Naiqus/Google_Keep_Encryptor#google-keep-encryptor)
+
+## On Android and iOS Devices
+Currently the Chrome mobile app doesn't support extensions. In order to decrypt your notes, you have to install the [Tampermonkey script](https://openuserjs.org/scripts/Naiqus/Google_Keep_Encryptor#google-keep-encryptor) on your phone and use the Google Keep website on mobile browsers (bookmark it).
+
+Here is a nice tutorial of how to [run Tampermonkey scripts on Android and iOS](https://chrunos.com/tampermonkey-scripts-for-mobile/).
+
+- Android: You will need to install **Firefox Nightly**.
+- iOS: You will need to install **Userscripts** Safari extension. Afterwards, you should be able to install the script when you open [this link](https://openuserjs.org/scripts/Naiqus/Google_Keep_Encryptor#google-keep-encryptor)  on Safari.
+
