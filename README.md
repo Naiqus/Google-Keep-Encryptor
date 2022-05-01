@@ -20,5 +20,5 @@ Currently the Chrome mobile app doesn't support extensions. In order to decrypt 
 
 
 - Android: You will need to install **Kiwi Browser**. [Then install the Chrome extension](https://chrome.google.com/webstore/detail/google-keep-encryptor/cedkkpjolghccafognlkficihjmfedhc)
-- iOS: You will need to install **Userscripts** Safari extension. Afterwards, you should be able to install the script when you open [this link](https://openuserjs.org/scripts/Naiqus/Google_Keep_Encryptor#google-keep-encryptor) on Safari. Here is a nice tutorial of how to [run Tampermonkey scripts on iOS](https://chrunos.com/tampermonkey-scripts-for-mobile/).
+- iOS: You will need to install **Userscripts** Safari extension. Afterwards, you should be able to install the script when you open [this link](https://github.com/Naiqus/Google-Keep-Encryptor/raw/master/user-script/Google%20Keep%20Encryptor.user.js) on Safari. Here is a nice tutorial of how to [run Tampermonkey scripts on iOS](https://chrunos.com/tampermonkey-scripts-for-mobile/).
 
